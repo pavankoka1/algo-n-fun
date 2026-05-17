@@ -1,10 +1,11 @@
-// src/app/page.tsx
+'use client'
+import dynamic from 'next/dynamic'
+
+const GraphCanvas = dynamic(
+  () => import('@/components/graph/GraphCanvas').then(m => m.GraphCanvas),
+  { ssr: false }
+)
+
 export default function HomePage() {
-  return (
-    <div className="flex h-[calc(100vh-3.5rem)] items-center justify-center">
-      <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
-        3D graph loading soon…
-      </p>
-    </div>
-  )
+  return <GraphCanvas />
 }
