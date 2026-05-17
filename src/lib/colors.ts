@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CATEGORY_MAP, type CategoryId } from '@/data/categories'
 
 export function categoryColor(id: CategoryId | string): string {
