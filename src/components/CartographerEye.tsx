@@ -235,28 +235,6 @@ export function CartographerEye() {
         <canvas ref={overlayRef} width={SIZE} height={SIZE}
           style={{ position: 'absolute', inset: 0, borderRadius: '50%' }} />
 
-        <svg
-          width={SIZE} height={SIZE}
-          style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', pointerEvents: 'none' }}
-          aria-hidden="true"
-        >
-          {[0,60,120,180,240,300].map((deg, i) => {
-            const rad = (deg * Math.PI) / 180
-            const tx  = CX + Math.cos(rad) * 8
-            const ty  = CY + Math.sin(rad) * 8
-            return (
-              <motion.ellipse
-                key={i}
-                cx={tx} cy={ty}
-                rx={7} ry={4}
-                fill="#000009"
-                style={{ transformOrigin: `${CX}px ${CY}px`, rotate: deg }}
-                animate={{ opacity: apertureT.current > 0.3 ? 1 : 0 }}
-              />
-            )
-          })}
-        </svg>
-
         <div style={{
           position: 'absolute', inset: 0, borderRadius: '50%',
           boxShadow: '0 0 0 1px rgba(255,215,0,0.18), 0 0 12px rgba(255,215,0,0.06)',
