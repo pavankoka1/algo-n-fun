@@ -1,6 +1,7 @@
 // src/components/TopNav.tsx
 'use client'
 import Link from 'next/link'
+import { CartographerEye } from './CartographerEye'
 
 export function TopNav() {
   return (
@@ -38,8 +39,7 @@ export function TopNav() {
         </span>
       </Link>
 
-      {/* Eye placeholder — replaced in Task 5 */}
-      <div id="eye-slot" />
+      <CartographerEye />
     </header>
   )
 }
