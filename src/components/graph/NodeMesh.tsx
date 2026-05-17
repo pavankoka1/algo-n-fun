@@ -47,11 +47,11 @@ export function NodeMesh({ nodes, formingT }: Props) {
     nodes.forEach((n, i) => {
       const isHovered = hoveredIdx.current === i
       const isFocused = focusedId === n.id
-      const baseScale = n.isLeaf ? 0.56 : (n.depth === 1 ? 1.1 : 0.8)
+      const baseScale = n.depth === 0 ? 2.0 : n.depth === 1 ? 1.3 : n.depth === 2 ? 0.85 : n.depth === 3 ? 0.55 : 0.4
       const targetScale = baseScale * (isHovered || isFocused ? 1.45 : 1) * formingT
       scaleTargets.current[i] += (targetScale - scaleTargets.current[i]) * 0.12
 
-      dummy.position.set(n.x, n.y, n.z)
+      dummy.position.set(n.x * formingT, n.y * formingT, n.z * formingT)
       dummy.scale.setScalar(scaleTargets.current[i])
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
