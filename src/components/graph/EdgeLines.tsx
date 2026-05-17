@@ -1,5 +1,6 @@
 'use client'
-import { useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { GraphNode, GraphEdge } from '@/lib/graphLayout'
 
@@ -10,7 +11,9 @@ interface Props {
 }
 
 export function EdgeLines({ nodes, edges, formingT }: Props) {
-  const { geometry, material } = useMemo(() => {
+  const matRef = useRef<THREE.LineBasicMaterial>(null!)
+
+  const geometry = useMemo(() => {
     const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]))
     const positions: number[] = []
     const edgeColors: number[] = []
@@ -27,17 +30,25 @@ export function EdgeLines({ nodes, edges, formingT }: Props) {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geo.setAttribute('color',    new THREE.Float32BufferAttribute(edgeColors, 3))
+    return geo
+  }, [nodes, edges])
 
-    const mat = new THREE.LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.28 * formingT,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
+  useFrame(() => {
+    if (matRef.current) {
+      matRef.current.opacity = 0.28 * formingT
+    }
+  })
 
-    return { geometry: geo, material: mat }
-  }, [nodes, edges, formingT])
-
-  return <lineSegments geometry={geometry} material={material} />
+  return (
+    <lineSegments geometry={geometry}>
+      <lineBasicMaterial
+        ref={matRef}
+        vertexColors
+        transparent
+        opacity={0.28 * formingT}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </lineSegments>
+  )
 }
