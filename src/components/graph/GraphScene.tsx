@@ -19,9 +19,6 @@ export function GraphScene() {
   const setPhase       = useGraphStore(s => s.setPhase)
   const cameraTarget   = useGraphStore(s => s.cameraTarget)
   const camTargetRef   = useRef(cameraTarget)
-  const idleTimer      = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const autoRotateRef  = useRef(true)
-  const autoRotateY    = useRef(0)
   const controlsRef    = useRef<any>(null)
 
   camTargetRef.current = cameraTarget
@@ -37,7 +34,7 @@ export function GraphScene() {
     if (phase !== 'ready') return
     let t = 0; let raf = 0
     const tick = () => {
-      t = Math.min(1, t + 0.012)
+      t = Math.min(1, t + 0.008)
       setFormingT(t)
       if (t < 1) raf = requestAnimationFrame(tick)
     }
@@ -46,25 +43,12 @@ export function GraphScene() {
   }, [phase])
 
   useFrame(({ camera }) => {
-    if (autoRotateRef.current && phase === 'ready') {
-      autoRotateY.current += 0.0008
-      const dist = camera.position.length()
-      camera.position.x = Math.sin(autoRotateY.current) * dist
-      camera.position.z = Math.cos(autoRotateY.current) * dist
-    } else {
-      const tgt = camTargetRef.current
-      camera.position.lerp(tgt, 0.045)
-      if (controlsRef.current) {
-        controlsRef.current.target.lerp(new THREE.Vector3(tgt.x, tgt.y, 0), 0.045)
-      }
+    const tgt = camTargetRef.current
+    camera.position.lerp(tgt, 0.045)
+    if (controlsRef.current) {
+      controlsRef.current.target.lerp(new THREE.Vector3(tgt.x, tgt.y, 0), 0.045)
     }
   })
-
-  const pauseAutoRotate = () => {
-    autoRotateRef.current = false
-    if (idleTimer.current) clearTimeout(idleTimer.current)
-    idleTimer.current = setTimeout(() => { autoRotateRef.current = true }, 4000)
-  }
 
   return (
     <>
@@ -88,7 +72,6 @@ export function GraphScene() {
         enablePan={false}
         maxDistance={90}
         minDistance={6}
-        onStart={pauseAutoRotate}
         enableDamping
         dampingFactor={0.08}
       />
