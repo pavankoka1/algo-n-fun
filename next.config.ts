@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const config: NextConfig = {
+  turbopack: {},
+  webpack(cfg) {
+    cfg.module.rules.push({ test: /\.(glb|gltf)$/, type: 'asset/resource' })
+    return cfg
+  },
+}
 
-export default nextConfig;
+export default config
