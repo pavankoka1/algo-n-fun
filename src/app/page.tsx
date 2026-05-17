@@ -1,5 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
+import { GraphOverlay } from '@/components/graph/GraphOverlay'
 
 const GraphCanvas = dynamic(
   () => import('@/components/graph/GraphCanvas').then(m => m.GraphCanvas),
@@ -7,5 +8,10 @@ const GraphCanvas = dynamic(
 )
 
 export default function HomePage() {
-  return <GraphCanvas />
+  return (
+    <>
+      <GraphCanvas />
+      <GraphOverlay />
+    </>
+  )
 }
