@@ -45,17 +45,17 @@ export function GraphScene() {
   }, [phase])
 
   useFrame(({ camera }) => {
-    const tgt = camTargetRef.current
-    camera.position.lerp(tgt, 0.045)
-    if (controlsRef.current) {
-      controlsRef.current.target.lerp(new THREE.Vector3(tgt.x, tgt.y, 0), 0.045)
-    }
-
     if (autoRotateRef.current && phase === 'ready') {
       autoRotateY.current += 0.0008
       const dist = camera.position.length()
       camera.position.x = Math.sin(autoRotateY.current) * dist
       camera.position.z = Math.cos(autoRotateY.current) * dist
+    } else {
+      const tgt = camTargetRef.current
+      camera.position.lerp(tgt, 0.045)
+      if (controlsRef.current) {
+        controlsRef.current.target.lerp(new THREE.Vector3(tgt.x, tgt.y, 0), 0.045)
+      }
     }
   })
 
