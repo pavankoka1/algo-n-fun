@@ -35,6 +35,18 @@ export function NodeMesh({ nodes, formingT }: Props) {
     [colors]
   )
 
+  const staggerOffsets = useMemo(() => {
+    const offsets = new Float32Array(nodes.length)
+    let d1Count = 0, d2Count = 0, d3plus = 0
+    nodes.forEach((n, i) => {
+      if (n.depth === 0)      offsets[i] = 0
+      else if (n.depth === 1) offsets[i] = 0.06 + (d1Count++ * 0.014)
+      else if (n.depth === 2) offsets[i] = 0.32 + (d2Count++ * 0.006)
+      else                    offsets[i] = 0.58 + (d3plus++ * 0.003)
+    })
+    return offsets
+  }, [nodes])
+
   const dummy = useMemo(() => new THREE.Object3D(), [])
   const scaleTargets = useRef(new Float32Array(nodes.length).fill(1))
 
@@ -48,10 +60,12 @@ export function NodeMesh({ nodes, formingT }: Props) {
       const isHovered = hoveredIdx.current === i
       const isFocused = focusedId === n.id
       const baseScale = n.depth === 0 ? 2.0 : n.depth === 1 ? 1.3 : n.depth === 2 ? 0.85 : n.depth === 3 ? 0.55 : 0.4
-      const targetScale = baseScale * (isHovered || isFocused ? 1.45 : 1) * formingT
+      const stagger = staggerOffsets[i]
+      const localT = Math.max(0, Math.min(1, (formingT - stagger) / 0.28))
+      const targetScale = baseScale * (isHovered || isFocused ? 1.45 : 1) * localT
       scaleTargets.current[i] += (targetScale - scaleTargets.current[i]) * 0.12
 
-      dummy.position.set(n.x * formingT, n.y * formingT, n.z * formingT)
+      dummy.position.set(n.x * localT, n.y * localT, n.z * localT)
       dummy.scale.setScalar(scaleTargets.current[i])
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
