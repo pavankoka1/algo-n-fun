@@ -21,7 +21,7 @@ function getLabelProps(node: GraphNode): {
     case 0:
       return { fontSize: 2.2, labelOffset: 3.5, maxWidth: 12, labelColor: '#ffffff' }
     case 1:
-      return { fontSize: 1.4, labelOffset: 2.0, maxWidth: 8, labelColor: '#' + base.getHexString() }
+      return { fontSize: 1.6, labelOffset: 2.2, maxWidth: 9, labelColor: '#' + base.getHexString() }
     case 2: {
       const c = base.clone().multiplyScalar(0.8)
       return { fontSize: 0.75, labelOffset: 1.1, maxWidth: 5, labelColor: '#' + c.getHexString() }
@@ -40,7 +40,7 @@ function getLabelProps(node: GraphNode): {
 export function NodeLabels({ nodes, formingT }: Props) {
   return (
     <>
-      {nodes.map((n) => {
+      {nodes.filter(n => n.depth <= 1).map((n) => {
         const { fontSize, labelOffset, maxWidth, labelColor } = getLabelProps(n)
         return (
           <Text
