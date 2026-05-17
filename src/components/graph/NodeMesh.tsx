@@ -57,14 +57,18 @@ export function NodeMesh({ nodes, formingT }: Props) {
       meshRef.current.setMatrixAt(i, dummy.matrix)
     })
     meshRef.current.instanceMatrix.needsUpdate = true
+    // Recompute bounding sphere each frame so raycasting covers the actual spread
+    meshRef.current.computeBoundingSphere()
   })
 
   return (
     <instancedMesh
       ref={meshRef}
       args={[SPHERE_GEO, undefined, nodes.length]}
-      onPointerMove={() => onPointerMove(meshRef.current)}
-      onClick={() => onPointerClick(meshRef.current)}
+      frustumCulled={false}
+      onPointerMove={(e) => { e.stopPropagation(); onPointerMove(e.instanceId ?? -1) }}
+      onClick={(e) => { e.stopPropagation(); onPointerClick(e.instanceId ?? -1) }}
+      onPointerLeave={() => onPointerMove(-1)}
     >
       <meshStandardMaterial
         vertexColors
