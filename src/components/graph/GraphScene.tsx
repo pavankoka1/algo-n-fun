@@ -9,6 +9,7 @@ import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
 import { NodeMesh } from './NodeMesh'
 import { EdgeLines } from './EdgeLines'
+import { NodeLabels } from './NodeLabels'
 
 export function GraphScene() {
   const [nodes, setNodes] = useState<GraphNode[]>([])
@@ -78,6 +79,7 @@ export function GraphScene() {
         <>
           <NodeMesh nodes={nodes} formingT={formingT} />
           <EdgeLines nodes={nodes} edges={edges} formingT={formingT} />
+          <NodeLabels nodes={nodes} formingT={formingT} />
         </>
       )}
 
