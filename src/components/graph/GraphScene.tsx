@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
 import { FloatingCards } from './FloatingCards'
+import { StarField } from './StarField'
 
 export function GraphScene() {
   const [formingT, setFormingT] = useState(0)
@@ -53,6 +54,8 @@ export function GraphScene() {
 
       <CryptexModel />
 
+      <StarField />
+
       {phase === 'ready' && (
         <FloatingCards formingT={formingT} />
       )}
@@ -68,7 +71,7 @@ export function GraphScene() {
 
       <EffectComposer>
         <Bloom
-          intensity={0.8}
+          intensity={1.0}
           luminanceThreshold={0.2}
           luminanceSmoothing={0.8}
           radius={0.6}
