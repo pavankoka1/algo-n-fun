@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
-import { FloatingCards } from './FloatingCards'
+import { HologramCards } from './HologramCards'
 import { StarField } from './StarField'
 
 export function GraphScene() {
@@ -56,8 +56,19 @@ export function GraphScene() {
 
       <StarField />
 
+      {/* Ambient center glow — deep purple nebula */}
+      <mesh position={[0, 0, -20]}>
+        <planeGeometry args={[80, 60]} />
+        <meshBasicMaterial
+          color="#0d0520"
+          transparent
+          opacity={0.7}
+          depthWrite={false}
+        />
+      </mesh>
+
       {phase === 'ready' && (
-        <FloatingCards formingT={formingT} />
+        <HologramCards formingT={formingT} />
       )}
 
       <OrbitControls
