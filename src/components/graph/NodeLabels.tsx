@@ -1,7 +1,5 @@
-// src/components/graph/NodeLabels.tsx
 'use client'
-import { Text } from '@react-three/drei'
-import * as THREE from 'three'
+import { Html } from '@react-three/drei'
 import type { GraphNode } from '@/lib/graphLayout'
 
 interface Props {
@@ -9,56 +7,38 @@ interface Props {
   formingT: number
 }
 
-function getLabelProps(node: GraphNode): {
-  fontSize: number
-  labelOffset: number
-  maxWidth: number
-  labelColor: string
-} {
-  const base = new THREE.Color(node.color)
-
-  switch (node.depth) {
-    case 0:
-      return { fontSize: 2.2, labelOffset: 3.5, maxWidth: 12, labelColor: '#ffffff' }
-    case 1:
-      return { fontSize: 1.6, labelOffset: 2.2, maxWidth: 9, labelColor: '#' + base.getHexString() }
-    case 2: {
-      const c = base.clone().multiplyScalar(0.8)
-      return { fontSize: 0.75, labelOffset: 1.1, maxWidth: 5, labelColor: '#' + c.getHexString() }
-    }
-    case 3: {
-      const c = base.clone().multiplyScalar(0.6)
-      return { fontSize: 0.5, labelOffset: 0.8, maxWidth: 5, labelColor: '#' + c.getHexString() }
-    }
-    default: {
-      const c = base.clone().multiplyScalar(0.5)
-      return { fontSize: 0.38, labelOffset: 0.6, maxWidth: 5, labelColor: '#' + c.getHexString() }
-    }
-  }
-}
-
 export function NodeLabels({ nodes, formingT }: Props) {
+  // Only show labels for depth 0 (root) and depth 1 (categories)
+  const labelNodes = nodes.filter(n => n.depth <= 1)
+
   return (
     <>
-      {nodes.filter(n => n.depth <= 1).map((n) => {
-        const { fontSize, labelOffset, maxWidth, labelColor } = getLabelProps(n)
+      {labelNodes.map((n) => {
+        const isRoot = n.depth === 0
+        const fontSize = isRoot ? 13 : 11
+        const offsetY = isRoot ? 3.5 : 2.0
+        const color = n.color
+
         return (
-          <Text
+          <Html
             key={n.id}
-            position={[n.x * formingT, n.y * formingT + labelOffset, n.z * formingT]}
-            fontSize={fontSize}
-            color={labelColor}
-            anchorX="center"
-            anchorY="bottom"
-            outlineWidth={0.05}
-            outlineColor="#000000"
-            maxWidth={maxWidth}
-            textAlign="center"
-            fillOpacity={formingT}
-            outlineOpacity={formingT}
+            position={[n.x * formingT, n.y * formingT + offsetY, n.z * formingT]}
+            center
+            style={{ pointerEvents: 'none', opacity: formingT }}
           >
-            {n.label}
-          </Text>
+            <div style={{
+              color,
+              fontSize: `${fontSize}px`,
+              fontFamily: 'var(--font-geist-sans, Inter, sans-serif)',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              textShadow: `0 0 12px ${color}, 0 0 6px ${color}88, 0 1px 3px #000`,
+              letterSpacing: '0.04em',
+              userSelect: 'none',
+            }}>
+              {n.label}
+            </div>
+          </Html>
         )
       })}
     </>
