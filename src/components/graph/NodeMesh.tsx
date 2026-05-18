@@ -65,7 +65,7 @@ export function NodeMesh({ nodes, formingT }: Props) {
       const targetScale = baseScale * (isHovered || isFocused ? 1.45 : 1) * localT
       scaleTargets.current[i] += (targetScale - scaleTargets.current[i]) * 0.12
 
-      dummy.position.set(n.x * localT, n.y * localT, n.z * localT)
+      dummy.position.set(n.x, n.y, n.z)
       dummy.scale.setScalar(scaleTargets.current[i])
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
