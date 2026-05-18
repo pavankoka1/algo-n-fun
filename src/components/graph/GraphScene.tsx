@@ -4,16 +4,15 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { runSimulation, type GraphNode, type GraphEdge } from '@/lib/graphLayout'
+import { runSimulation, type GraphNode } from '@/lib/graphLayout'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
 import { NodeMesh } from './NodeMesh'
-import { EdgeLines } from './EdgeLines'
+import { CategoryRings } from './CategoryRings'
 import { NodeLabels } from './NodeLabels'
 
 export function GraphScene() {
   const [nodes, setNodes] = useState<GraphNode[]>([])
-  const [edges, setEdges] = useState<GraphEdge[]>([])
   const [formingT, setFormingT] = useState(0)
   const phase          = useGraphStore(s => s.phase)
   const setPhase       = useGraphStore(s => s.setPhase)
@@ -25,8 +24,8 @@ export function GraphScene() {
 
   useEffect(() => {
     if (phase !== 'forming') return
-    runSimulation().then(({ nodes: n, edges: e }) => {
-      setNodes(n); setEdges(e); setPhase('ready')
+    runSimulation().then(({ nodes: n }) => {
+      setNodes(n); setPhase('ready')
     })
   }, [phase, setPhase])
 
@@ -62,7 +61,7 @@ export function GraphScene() {
       {nodes.length > 0 && (
         <>
           <NodeMesh nodes={nodes} formingT={formingT} />
-          <EdgeLines nodes={nodes} edges={edges} formingT={formingT} />
+          <CategoryRings nodes={nodes} formingT={formingT} />
           <NodeLabels nodes={nodes} formingT={formingT} />
         </>
       )}
@@ -78,8 +77,8 @@ export function GraphScene() {
 
       <EffectComposer>
         <Bloom
-          intensity={1.1}
-          luminanceThreshold={0.15}
+          intensity={1.6}
+          luminanceThreshold={0.1}
           luminanceSmoothing={0.55}
           radius={0.5}
         />
