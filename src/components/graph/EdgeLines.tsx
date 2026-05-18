@@ -29,8 +29,11 @@ export function EdgeLines({ nodes, edges, formingT }: Props) {
       const tgtV = new THREE.Vector3(tgt.x, tgt.y, tgt.z)
 
       // Control point: midpoint between src and tgt, pulled toward origin
+      // Use lighter bow for short intra-cluster edges
+      const dist = srcV.distanceTo(tgtV)
+      const bowFactor = dist < 15 ? 0.72 : 0.5  // less curve for short edges
       const mid = srcV.clone().add(tgtV).multiplyScalar(0.5)
-      mid.multiplyScalar(0.55) // bow inward toward origin
+      mid.multiplyScalar(bowFactor)
 
       const curve = new THREE.QuadraticBezierCurve3(srcV, mid, tgtV)
       const pts = curve.getPoints(CURVE_POINTS)
@@ -62,7 +65,7 @@ export function EdgeLines({ nodes, edges, formingT }: Props) {
 
   useFrame(() => {
     if (matRef.current) {
-      matRef.current.opacity = 0.28 * formingT
+      matRef.current.opacity = 0.22 * formingT
     }
   })
 
@@ -72,7 +75,7 @@ export function EdgeLines({ nodes, edges, formingT }: Props) {
         ref={matRef}
         vertexColors
         transparent
-        opacity={0.28 * formingT}
+        opacity={0.22 * formingT}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
