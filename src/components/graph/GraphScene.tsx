@@ -4,15 +4,11 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { runSimulation, type GraphNode } from '@/lib/graphLayout'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
-import { NodeMesh } from './NodeMesh'
-import { CategoryRings } from './CategoryRings'
-import { NodeLabels } from './NodeLabels'
+import { FloatingCards } from './FloatingCards'
 
 export function GraphScene() {
-  const [nodes, setNodes] = useState<GraphNode[]>([])
   const [formingT, setFormingT] = useState(0)
   const phase          = useGraphStore(s => s.phase)
   const setPhase       = useGraphStore(s => s.setPhase)
@@ -24,9 +20,8 @@ export function GraphScene() {
 
   useEffect(() => {
     if (phase !== 'forming') return
-    runSimulation().then(({ nodes: n }) => {
-      setNodes(n); setPhase('ready')
-    })
+    // No simulation needed — FloatingCards reads directly from PATTERNS
+    setPhase('ready')
   }, [phase, setPhase])
 
   useEffect(() => {
@@ -58,12 +53,8 @@ export function GraphScene() {
 
       <CryptexModel />
 
-      {nodes.length > 0 && (
-        <>
-          <NodeMesh nodes={nodes} formingT={formingT} />
-          <CategoryRings nodes={nodes} formingT={formingT} />
-          <NodeLabels nodes={nodes} formingT={formingT} />
-        </>
+      {phase === 'ready' && (
+        <FloatingCards formingT={formingT} />
       )}
 
       <OrbitControls
@@ -77,10 +68,10 @@ export function GraphScene() {
 
       <EffectComposer>
         <Bloom
-          intensity={1.6}
-          luminanceThreshold={0.1}
-          luminanceSmoothing={0.55}
-          radius={0.5}
+          intensity={0.8}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.8}
+          radius={0.6}
         />
       </EffectComposer>
 
