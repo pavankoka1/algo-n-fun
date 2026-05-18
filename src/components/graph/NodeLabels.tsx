@@ -15,26 +15,28 @@ export function NodeLabels({ nodes, formingT }: Props) {
     <>
       {labelNodes.map((n) => {
         const isRoot = n.depth === 0
-        const fontSize = isRoot ? 13 : 11
         const offsetY = isRoot ? 3.5 : 2.0
         const color = n.color
 
         return (
           <Html
             key={n.id}
-            position={[n.x * formingT, n.y * formingT + offsetY, n.z * formingT]}
+            position={[n.x, n.y + offsetY, n.z]}
             center
-            style={{ pointerEvents: 'none', opacity: formingT }}
+            style={{ pointerEvents: 'none', opacity: formingT, transition: 'opacity 0.3s' }}
           >
             <div style={{
               color,
-              fontSize: `${fontSize}px`,
+              fontSize: isRoot ? '14px' : '12px',
               fontFamily: 'var(--font-geist-sans, Inter, sans-serif)',
-              fontWeight: 600,
+              fontWeight: 700,
               whiteSpace: 'nowrap',
-              textShadow: `0 0 12px ${color}, 0 0 6px ${color}88, 0 1px 3px #000`,
-              letterSpacing: '0.04em',
+              textShadow: `0 0 16px ${color}, 0 0 8px ${color}99, 0 2px 4px rgba(0,0,0,0.9)`,
+              letterSpacing: '0.05em',
               userSelect: 'none',
+              textTransform: isRoot ? 'none' : 'uppercase',
+              textAlign: 'center',
+              transform: 'translateY(-50%)',
             }}>
               {n.label}
             </div>
