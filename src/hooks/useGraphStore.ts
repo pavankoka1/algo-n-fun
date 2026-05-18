@@ -16,7 +16,7 @@ interface GraphState {
 export const useGraphStore = create<GraphState>(set => ({
   focusedNodeId: null,
   isAnimating: false,
-  cameraTarget: new THREE.Vector3(0, 0, 48),
+  cameraTarget: new THREE.Vector3(0, 0, 60),
   phase: 'cryptex',
   setFocused:       id  => set({ focusedNodeId: id }),
   setAnimating:     v   => set({ isAnimating: v }),
