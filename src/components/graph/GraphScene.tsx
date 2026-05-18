@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
-import { HologramCards } from './HologramCards'
+import { TreeExplorer } from './TreeExplorer'
 import { StarField } from './StarField'
 
 export function GraphScene() {
@@ -56,19 +56,8 @@ export function GraphScene() {
 
       <StarField />
 
-      {/* Ambient center glow — deep purple nebula */}
-      <mesh position={[0, 0, -20]}>
-        <planeGeometry args={[80, 60]} />
-        <meshBasicMaterial
-          color="#0d0520"
-          transparent
-          opacity={0.7}
-          depthWrite={false}
-        />
-      </mesh>
-
       {phase === 'ready' && (
-        <HologramCards formingT={formingT} />
+        <TreeExplorer formingT={formingT} />
       )}
 
       <OrbitControls
@@ -82,10 +71,10 @@ export function GraphScene() {
 
       <EffectComposer>
         <Bloom
-          intensity={1.0}
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.8}
-          radius={0.6}
+          intensity={1.4}
+          luminanceThreshold={0.12}
+          luminanceSmoothing={0.7}
+          radius={0.55}
         />
       </EffectComposer>
 
