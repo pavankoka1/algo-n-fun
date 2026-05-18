@@ -37,12 +37,12 @@ export function NodeMesh({ nodes, formingT }: Props) {
 
   const staggerOffsets = useMemo(() => {
     const offsets = new Float32Array(nodes.length)
-    let d1Count = 0, d2Count = 0, d3plus = 0
+    let d1i = 0
     nodes.forEach((n, i) => {
-      if (n.depth === 0)      offsets[i] = 0
-      else if (n.depth === 1) offsets[i] = 0.06 + (d1Count++ * 0.014)
-      else if (n.depth === 2) offsets[i] = 0.32 + (d2Count++ * 0.006)
-      else                    offsets[i] = 0.58 + (d3plus++ * 0.003)
+      if      (n.depth === 0) offsets[i] = 0
+      else if (n.depth === 1) offsets[i] = 0.05 + (d1i++ * 0.016)
+      else if (n.depth === 2) offsets[i] = 0.38
+      else                    offsets[i] = 0.62
     })
     return offsets
   }, [nodes])
