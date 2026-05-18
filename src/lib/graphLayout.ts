@@ -23,11 +23,9 @@ let _nodes: GraphNode[] | null = null
 let _edges: GraphEdge[] | null = null
 
 function buildGraph() {
-  // Build a map from id → PatternNode for quick lookup
   const patternById = new Map<string, PatternNode>()
   PATTERNS.forEach(p => patternById.set(p.id, p))
 
-  // Build a map from parentId → children
   const childrenOf = new Map<string, PatternNode[]>()
   PATTERNS.forEach(p => {
     if (p.parentId != null) {
@@ -36,124 +34,84 @@ function buildGraph() {
     }
   })
 
-  // Depth 1 category nodes (children of root), sorted by their order in childIds of root
-  const root = patternById.get('root')!
-  const depth1Ids = root.childIds
-  const depth1Count = depth1Ids.length // 16
-
-  // Map to store computed positions
-  const posMap = new Map<string, { x: number; y: number; z: number; angle: number }>()
+  const posMap = new Map<string, { x: number; y: number; z: number }>()
 
   // Root at origin
-  posMap.set('root', { x: 0, y: 0, z: 0, angle: 0 })
+  posMap.set('root', { x: 0, y: 0, z: 0 })
 
-  // Depth 1: evenly spaced ring at radius 18, alternating z ±2
+  // 16 category cluster centers in a ring at r=22
+  const root = patternById.get('root')!
+  const depth1Ids = root.childIds // 16 categories
   depth1Ids.forEach((id, i) => {
-    const angle = (i / depth1Count) * 2 * Math.PI
-    const r = 18
-    const x = Math.cos(angle) * r
-    const y = Math.sin(angle) * r
-    const z = (i % 2 === 0 ? 1 : -1) * 2
-    posMap.set(id, { x, y, z, angle })
+    const angle = (i / depth1Ids.length) * 2 * Math.PI
+    posMap.set(id, {
+      x: Math.cos(angle) * 22,
+      y: Math.sin(angle) * 22,
+      z: (i % 3 === 0 ? 1.5 : i % 3 === 1 ? -1.5 : 0) // gentle z variation
+    })
   })
 
-  // BFS to compute depth 2, 3, 4 positions
-  // For each depth, spread children within ±(sectorWidth * 0.4) of parent's angle
-  // Radii: depth2=36, depth3=54, depth4=68
-  const radii: Record<number, number> = { 2: 36, 3: 54, 4: 68 }
-  const sectorWidth = (2 * Math.PI) / depth1Count
-
-  // Process depth 2 (children of depth-1 nodes)
-  depth1Ids.forEach((d1Id) => {
-    const parentPos = posMap.get(d1Id)!
+  // Depth-2 nodes: orbit their category at radius 7-8 (local ring)
+  depth1Ids.forEach(d1Id => {
+    const parent = posMap.get(d1Id)!
     const children = childrenOf.get(d1Id) ?? []
     const n = children.length
-    if (n === 0) return
-    const halfArc = sectorWidth * 0.4
-
     children.forEach((child, i) => {
-      const angle =
-        n === 1
-          ? parentPos.angle
-          : parentPos.angle + halfArc * (2 * (i / (n - 1)) - 1)
-      const r = radii[2]
-      const x = Math.cos(angle) * r
-      const y = Math.sin(angle) * r
-      const z = parentPos.z * 0.5 + (i % 2 === 0 ? 0.5 : -0.5)
-      posMap.set(child.id, { x, y, z, angle })
+      const localAngle = (i / Math.max(n, 1)) * 2 * Math.PI
+      const r = 7.5 + (i % 2) * 0.8  // slight radius variation
+      posMap.set(child.id, {
+        x: parent.x + Math.cos(localAngle) * r,
+        y: parent.y + Math.sin(localAngle) * r,
+        z: parent.z + (i % 2 === 0 ? 1 : -1) * 0.8
+      })
     })
   })
 
-  // Process depth 3
+  // Depth-3: orbit their depth-2 parent at radius 3.5
   PATTERNS.filter(p => p.depth === 2).forEach(d2Node => {
-    const parentPos = posMap.get(d2Node.id)
-    if (!parentPos) return
+    const parent = posMap.get(d2Node.id)
+    if (!parent) return
     const children = childrenOf.get(d2Node.id) ?? []
     const n = children.length
-    if (n === 0) return
-    const halfArc = sectorWidth * 0.28
-
     children.forEach((child, i) => {
-      const angle =
-        n === 1
-          ? parentPos.angle
-          : parentPos.angle + halfArc * (2 * (i / (n - 1)) - 1)
-      const r = radii[3]
-      const x = Math.cos(angle) * r
-      const y = Math.sin(angle) * r
-      const z = parentPos.z * 0.3
-      posMap.set(child.id, { x, y, z, angle })
+      const localAngle = (i / Math.max(n, 1)) * 2 * Math.PI - Math.PI / 4
+      posMap.set(child.id, {
+        x: parent.x + Math.cos(localAngle) * 3.5,
+        y: parent.y + Math.sin(localAngle) * 3.5,
+        z: parent.z + (i % 2 === 0 ? 0.5 : -0.5)
+      })
     })
   })
 
-  // Process depth 4
+  // Depth-4: orbit their depth-3 parent at radius 1.8
   PATTERNS.filter(p => p.depth === 3).forEach(d3Node => {
-    const parentPos = posMap.get(d3Node.id)
-    if (!parentPos) return
+    const parent = posMap.get(d3Node.id)
+    if (!parent) return
     const children = childrenOf.get(d3Node.id) ?? []
     const n = children.length
-    if (n === 0) return
-    const halfArc = sectorWidth * 0.18
-
     children.forEach((child, i) => {
-      const angle =
-        n === 1
-          ? parentPos.angle
-          : parentPos.angle + halfArc * (2 * (i / (n - 1)) - 1)
-      const r = radii[4]
-      const x = Math.cos(angle) * r
-      const y = Math.sin(angle) * r
-      const z = 0
-      posMap.set(child.id, { x, y, z, angle })
+      const localAngle = (i / Math.max(n, 1)) * 2 * Math.PI + Math.PI / 6
+      posMap.set(child.id, {
+        x: parent.x + Math.cos(localAngle) * 1.8,
+        y: parent.y + Math.sin(localAngle) * 1.8,
+        z: parent.z
+      })
     })
   })
 
-  // Build final nodes array
-  const nodes: GraphNode[] = PATTERNS.map((p: PatternNode, idx: number) => {
+  const nodes: GraphNode[] = PATTERNS.map((p, idx) => {
     const pos = posMap.get(p.id) ?? { x: 0, y: 0, z: 0 }
     return {
-      id:        p.id,
-      label:     p.label,
-      color:     p.color,
-      depth:     p.depth,
-      isLeaf:    p.isLeaf,
-      patternId: p.id,
-      x:  pos.x,
-      y:  pos.y,
-      z:  pos.z,
-      vx: 0,
-      vy: 0,
-      vz: 0,
-      index: idx,
+      id: p.id, label: p.label, color: p.color,
+      depth: p.depth, isLeaf: p.isLeaf, patternId: p.id,
+      x: pos.x, y: pos.y, z: pos.z,
+      vx: 0, vy: 0, vz: 0, index: idx,
     }
   })
 
-  // Build edges
   const edges: GraphEdge[] = []
   PATTERNS.forEach(p => {
-    p.childIds.forEach(cid => {
-      edges.push({ source: p.id, target: cid })
-    })
+    p.childIds.forEach(cid => edges.push({ source: p.id, target: cid }))
   })
 
   return { nodes, edges }
