@@ -95,7 +95,9 @@ export function Frame({
         }}
       />
 
-      {/* Content layer */}
+      {/* Content layer — relies on DOM order (last sibling) to render
+          above the absolutely-positioned background layers. Satori does
+          not support z-index so we cannot stack-rank explicitly. */}
       <div
         style={{
           position: 'relative',
@@ -104,7 +106,6 @@ export function Frame({
           display:  'flex',
           flexDirection: 'column',
           padding:  '64px 76px',
-          zIndex:   1,
         }}
       >
         {children}

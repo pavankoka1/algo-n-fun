@@ -37,9 +37,10 @@ export async function generateImageMetadata() {
 }
 
 export default async function ProblemOG(
-  { params }: { params: { slug: string; question: string } }
+  { params }: { params: Promise<{ slug: string; question: string }> }
 ) {
-  const problem = PROBLEMS.find(p => p.id === params.question)
+  const { question } = await params
+  const problem = PROBLEMS.find(p => p.id === question)
   if (!problem) {
     return new ImageResponse(
       (

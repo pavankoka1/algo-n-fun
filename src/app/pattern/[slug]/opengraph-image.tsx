@@ -37,9 +37,10 @@ export async function generateImageMetadata() {
 }
 
 export default async function PatternOG(
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const node     = PATTERN_MAP[params.slug]
+  const { slug } = await params
+  const node     = PATTERN_MAP[slug]
   if (!node) {
     // Fall back to a generic card if someone hits an invalid slug.
     return new ImageResponse(

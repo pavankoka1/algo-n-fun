@@ -82,7 +82,7 @@ export default function HomePage() {
             with {TOTAL_PROBLEMS}+ curated coding-interview problems from
             LeetCode, GeeksforGeeks, HackerRank, CodeChef, and SPOJ — each
             tagged with the underlying pattern, difficulty, and a short
-            "why this pattern" explainer.
+            &ldquo;why this pattern&rdquo; explainer.
           </p>
         </header>
 
@@ -116,12 +116,12 @@ export default function HomePage() {
         </nav>
 
         <section>
-          <h2>What you'll find inside</h2>
+          <h2>What you&rsquo;ll find inside</h2>
           <ul>
             <li>
               Pattern-first navigation: every problem is filed under the
               technique that unlocks it (two-pointer, sliding window,
-              monotonic stack, BFS, Dijkstra, Kadane's, KMP, segment tree,
+              monotonic stack, BFS, Dijkstra, Kadane&rsquo;s, KMP, segment tree,
               Fenwick tree, union-find, bitmask DP, and many more).
             </li>
             <li>
@@ -132,8 +132,8 @@ export default function HomePage() {
             <li>
               Curated practice sets from FAANG interview repositories,
               competitive-programming sites, and classic algorithm
-              textbooks — each annotated with difficulty and a "why this
-              pattern" hint.
+              textbooks — each annotated with difficulty and a &ldquo;why this
+              pattern&rdquo; hint.
             </li>
             <li>
               Built for engineers preparing for coding interviews at
