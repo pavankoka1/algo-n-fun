@@ -16,7 +16,7 @@ export default function QuestionPanelPage({ params }: { params: Promise<{ slug: 
   if (!problem) return null
 
   const node  = PATTERN_MAP[problem.patternId]
-  const color = node?.color ?? '#00E5FF'
+  const color = node?.color ?? '#6BA9C9'
 
   return (
     <>

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { use } from 'react'
 import { PATTERN_MAP } from '@/data/patterns'
-import { problemsByPattern } from '@/data/problems'
+import { problemsByPatternOrSubtree } from '@/data/problems'
 import { CATEGORY_MAP } from '@/data/categories'
 import { ProblemCard } from '@/components/ui/ProblemCard'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
@@ -19,7 +19,7 @@ export default function PatternPanelPage({ params }: { params: Promise<{ slug: s
 
   const category   = CATEGORY_MAP[node.category]
   const children   = node.childIds.map(id => PATTERN_MAP[id]).filter(Boolean)
-  const problems   = problemsByPattern(node.id)
+  const problems   = problemsByPatternOrSubtree(node.id)
   const parentNode = node.parentId ? PATTERN_MAP[node.parentId] : null
 
   const crumbs = [

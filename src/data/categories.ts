@@ -10,23 +10,32 @@ export interface DSACategory {
   color: string
 }
 
+// ─── Palette ──────────────────────────────────────────────────────────────────
+//
+// Designed in HSL: every swatch sits at roughly L=58%, S=36% so the categories
+// read as a single jewel-toned family rather than a screaming colour wheel.
+// Hues are spread across the wheel so neighbours stay distinguishable.
+//
+//   teal · sage · gold · terracotta · lavender · steel · forest · amber
+//   honey · periwinkle · rose · seafoam · coral · cyan · slate · mauve
+//
 export const CATEGORIES: DSACategory[] = [
-  { id: 'array',      label: 'Array',               color: '#00E5FF' },
-  { id: 'string',     label: 'String',              color: '#4DFFB4' },
-  { id: 'hashmap',    label: 'Hash Map',             color: '#FFD700' },
-  { id: 'stack',      label: 'Stack',               color: '#FF6B6B' },
-  { id: 'queue',      label: 'Queue / Deque',       color: '#A78BFA' },
-  { id: 'linkedlist', label: 'Linked List',         color: '#60CFFF' },
-  { id: 'trees',      label: 'Trees',               color: '#34D399' },
-  { id: 'recursion',  label: 'Recursion',           color: '#FB923C' },
-  { id: 'heap',       label: 'Heap',                color: '#F59E0B' },
-  { id: 'graphs',     label: 'Graphs',              color: '#818CF8' },
-  { id: 'trie',       label: 'Trie',                color: '#EC4899' },
-  { id: 'dp',         label: 'Dynamic Programming', color: '#6EE7B7' },
-  { id: 'greedy',     label: 'Greedy',              color: '#FCA5A5' },
-  { id: 'bitmanip',   label: 'Bit Manipulation',    color: '#22D3EE' },
-  { id: 'sorting',    label: 'Sorting Algorithms',  color: '#CBD5E1' },
-  { id: 'range',      label: 'Range Structures',    color: '#7C3AED' },
+  { id: 'array',      label: 'Array',               color: '#6BA9C9' },
+  { id: 'string',     label: 'String',              color: '#7BB89B' },
+  { id: 'hashmap',    label: 'Hash Map',            color: '#D4B26C' },
+  { id: 'stack',      label: 'Stack',               color: '#C77B6F' },
+  { id: 'queue',      label: 'Queue / Deque',       color: '#9F92C0' },
+  { id: 'linkedlist', label: 'Linked List',         color: '#7BA4C9' },
+  { id: 'trees',      label: 'Trees',               color: '#74AE82' },
+  { id: 'recursion',  label: 'Recursion',           color: '#C58F65' },
+  { id: 'heap',       label: 'Heap',                color: '#C9A965' },
+  { id: 'graphs',     label: 'Graphs',              color: '#8893C2' },
+  { id: 'trie',       label: 'Trie',                color: '#C193AB' },
+  { id: 'dp',         label: 'Dynamic Programming', color: '#79B8AB' },
+  { id: 'greedy',     label: 'Greedy',              color: '#C28686' },
+  { id: 'bitmanip',   label: 'Bit Manipulation',    color: '#75B5B5' },
+  { id: 'sorting',    label: 'Sorting Algorithms',  color: '#A8B3C8' },
+  { id: 'range',      label: 'Range Structures',    color: '#A180B3' },
 ]
 
 export const CATEGORY_MAP = Object.fromEntries(

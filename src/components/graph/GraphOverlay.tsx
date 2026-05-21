@@ -3,14 +3,14 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { PATTERN_MAP } from '@/data/patterns'
-import { problemsByPattern } from '@/data/problems'
+import { problemsByPatternOrSubtree } from '@/data/problems'
 
 export function GraphOverlay() {
   const focusedId  = useGraphStore(s => s.focusedNodeId)
   const setFocused = useGraphStore(s => s.setFocused)
   const router     = useRouter()
   const node       = focusedId ? PATTERN_MAP[focusedId] : null
-  const problems   = node ? problemsByPattern(node.id) : []
+  const problems   = node ? problemsByPatternOrSubtree(node.id) : []
 
   return (
     <AnimatePresence>

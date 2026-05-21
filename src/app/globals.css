@@ -18,27 +18,27 @@
   --text-dim:     #2A2A3A;
 
   /* Brand glows */
-  --glow-gold:  rgba(255, 215, 0, 0.14);
-  --glow-cyan:  rgba(0, 229, 255, 0.08);
+  --glow-gold:  rgba(245, 207, 122, 0.14);
+  --glow-cyan:  rgba(107, 169, 201, 0.10);
   --stroke:     rgba(255, 255, 255, 0.06);
 
-  /* Category accents */
-  --cat-array:        #00E5FF;
-  --cat-string:       #4DFFB4;
-  --cat-hashmap:      #FFD700;
-  --cat-stack:        #FF6B6B;
-  --cat-queue:        #A78BFA;
-  --cat-linkedlist:   #60CFFF;
-  --cat-trees:        #34D399;
-  --cat-recursion:    #FB923C;
-  --cat-heap:         #F59E0B;
-  --cat-graphs:       #818CF8;
-  --cat-trie:         #EC4899;
-  --cat-dp:           #6EE7B7;
-  --cat-greedy:       #FCA5A5;
-  --cat-bitmanip:     #22D3EE;
-  --cat-sorting:      #CBD5E1;
-  --cat-range:        #7C3AED;
+  /* Category accents — jewel-toned, all ~L58% S36% for a unified family */
+  --cat-array:        #6BA9C9;
+  --cat-string:       #7BB89B;
+  --cat-hashmap:      #D4B26C;
+  --cat-stack:        #C77B6F;
+  --cat-queue:        #9F92C0;
+  --cat-linkedlist:   #7BA4C9;
+  --cat-trees:        #74AE82;
+  --cat-recursion:    #C58F65;
+  --cat-heap:         #C9A965;
+  --cat-graphs:       #8893C2;
+  --cat-trie:         #C193AB;
+  --cat-dp:           #79B8AB;
+  --cat-greedy:       #C28686;
+  --cat-bitmanip:     #75B5B5;
+  --cat-sorting:      #A8B3C8;
+  --cat-range:        #A180B3;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,7 +54,7 @@ body {
 }
 
 ::selection {
-  background: rgba(0, 229, 255, 0.18);
+  background: rgba(107, 169, 201, 0.28);
   color: #fff;
 }
 
@@ -77,20 +77,36 @@ body {
   75%      { transform: translate(-1%,-2%); }
 }
 
-/* Tree explorer node labels */
+/* Tree explorer node labels — delay set per-node via inline animationDelay */
 .tree-label {
   opacity: 0;
-  animation: treeLabelIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+  animation: treeLabelIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
   will-change: opacity, transform;
 }
 
 @keyframes treeLabelIn {
   from {
     opacity: 0;
-    transform: translateX(-5px);
+    transform: translateY(6px) scale(0.88);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Hover tooltip */
+.node-tooltip {
+  animation: tooltipIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tooltipIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

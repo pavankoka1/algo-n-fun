@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { PATTERN_MAP, PATTERNS } from '@/data/patterns'
-import { problemsByPattern } from '@/data/problems'
+import { problemsByPatternOrSubtree } from '@/data/problems'
 import { CATEGORY_MAP } from '@/data/categories'
 import { ProblemCard } from '@/components/ui/ProblemCard'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
@@ -29,7 +29,7 @@ export default async function PatternPage({ params }: { params: Promise<{ slug: 
 
   const category   = CATEGORY_MAP[node.category]
   const children   = node.childIds.map(id => PATTERN_MAP[id]).filter(Boolean)
-  const problems   = problemsByPattern(node.id)
+  const problems   = problemsByPatternOrSubtree(node.id)
   const parentNode = node.parentId ? PATTERN_MAP[node.parentId] : null
 
   const crumbs = [

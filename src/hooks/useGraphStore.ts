@@ -6,7 +6,14 @@ interface GraphState {
   focusedNodeId: string | null
   isAnimating: boolean
   cameraTarget: THREE.Vector3
-  phase: 'cryptex' | 'dissolve' | 'forming' | 'ready'
+  // ─── Phase machine ──────────────────────────────────────────────────────
+  //
+  //   cryptex   — hero animation: cryptex spins, charges, dissolves & shrinks
+  //   exploding — the singularity blows up: impact flash + stars erupt outward
+  //   forming   — transient handoff (kept for backward compat with FloatingCards)
+  //   ready     — galaxy is settled, tree explorer is interactive
+  //
+  phase: 'cryptex' | 'exploding' | 'forming' | 'ready'
   setFocused: (id: string | null) => void
   setAnimating: (v: boolean) => void
   setCameraTarget: (v: THREE.Vector3) => void

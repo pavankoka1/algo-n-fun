@@ -2,9 +2,9 @@
 import type { Difficulty } from '@/data/problems'
 
 const COLORS: Record<Difficulty, string> = {
-  Easy:   '#34D399',
-  Medium: '#F59E0B',
-  Hard:   '#FF6B6B',
+  Easy:   '#74AE82',   // muted forest — matches palette
+  Medium: '#C9A965',   // honey gold
+  Hard:   '#C77B6F',   // terracotta — still reads as "warning" without screaming
 }
 
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {

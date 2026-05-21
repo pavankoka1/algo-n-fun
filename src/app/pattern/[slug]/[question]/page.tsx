@@ -26,7 +26,7 @@ export default async function QuestionPage({
   const node     = PATTERN_MAP[problem.patternId]
   const parent   = node?.parentId ? PATTERN_MAP[node.parentId] : null
   const siblings = problemsByPattern(problem.patternId).filter(p => p.id !== problem.id).slice(0, 3)
-  const color    = node?.color ?? '#00E5FF'
+  const color    = node?.color ?? '#6BA9C9'
 
   const crumbs = [
     { label: 'DSA Patterns', href: '/' },

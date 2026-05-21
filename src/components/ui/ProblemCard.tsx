@@ -8,7 +8,7 @@ interface Props {
   accentColor?: string
 }
 
-export function ProblemCard({ problem, accentColor = '#00E5FF' }: Props) {
+export function ProblemCard({ problem, accentColor = '#6BA9C9' }: Props) {
   return (
     <div style={{
       background: 'var(--bg-elevated)',
