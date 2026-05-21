@@ -1,6 +1,7 @@
 // src/app/pattern/[slug]/[question]/page.tsx
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { PATTERN_MAP, PATTERNS } from '@/data/patterns'
+import { PATTERN_MAP } from '@/data/patterns'
 import { PROBLEMS, problemsByPattern } from '@/data/problems'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge'
@@ -8,18 +9,85 @@ import { PlatformBadge } from '@/components/ui/PlatformBadge'
 import { ProblemCard } from '@/components/ui/ProblemCard'
 import { TopNav } from '@/components/TopNav'
 import { GrainOverlay } from '@/components/GrainOverlay'
+import { JsonLd } from '@/lib/JsonLd'
+import {
+  SITE_URL,
+  SITE_NAME,
+  DEFAULT_KEYWORDS,
+  clampDescription,
+  urls,
+  patternSlugForProblem,
+} from '@/lib/seo'
 
+// ─── Static params ──────────────────────────────────────────────────────────
 export async function generateStaticParams() {
-  return PROBLEMS.map(p => {
-    const node = PATTERN_MAP[p.patternId]
-    return { slug: node?.parentId ?? p.patternId, question: p.id }
-  })
+  return PROBLEMS.map(p => ({
+    slug: patternSlugForProblem(p.patternId),
+    question: p.id,
+  }))
 }
 
+// ─── Metadata ───────────────────────────────────────────────────────────────
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string; question: string }> }
+): Promise<Metadata> {
+  const { question } = await params
+  const problem = PROBLEMS.find(p => p.id === question)
+  if (!problem) {
+    return {
+      title: 'Problem not found',
+      description: 'The requested problem does not exist.',
+      robots: { index: false, follow: false },
+    }
+  }
+
+  const node    = PATTERN_MAP[problem.patternId]
+  const slug    = patternSlugForProblem(problem.patternId)
+  const canonical = `/pattern/${slug}/${problem.id}`
+
+  // Pull the pattern context into the description so the SERP snippet
+  // immediately tells the searcher "this is a <pattern> problem".
+  const description = clampDescription(
+    `${problem.title} — ${problem.difficulty} ${problem.platform} problem solved with the ` +
+    `${node?.label ?? 'DSA'} pattern. ${problem.whyThisPattern}`
+  )
+
+  const keywords = [
+    problem.title,
+    `${problem.title} solution`,
+    `${problem.title} ${problem.platform.toLowerCase()}`,
+    `${problem.title} ${node?.label ?? 'DSA'}`,
+    `${node?.label ?? 'DSA'} pattern`,
+    `${problem.difficulty.toLowerCase()} ${problem.platform.toLowerCase()}`,
+    ...(problem.tags ?? []),
+    ...DEFAULT_KEYWORDS,
+  ]
+
+  return {
+    title: `${problem.title} — ${problem.difficulty} (${problem.platform})`,
+    description,
+    keywords,
+    alternates: { canonical },
+    openGraph: {
+      type: 'article',
+      url: `${SITE_URL}${canonical}`,
+      siteName: SITE_NAME,
+      title: `${problem.title} — ${problem.difficulty} ${problem.platform} · ${SITE_NAME}`,
+      description,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${problem.title} — ${problem.difficulty}`,
+      description,
+    },
+  }
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
 export default async function QuestionPage({
   params,
 }: { params: Promise<{ slug: string; question: string }> }) {
-  const { slug, question } = await params
+  const { question } = await params
   const problem = PROBLEMS.find(p => p.id === question)
   if (!problem) notFound()
 
@@ -27,6 +95,8 @@ export default async function QuestionPage({
   const parent   = node?.parentId ? PATTERN_MAP[node.parentId] : null
   const siblings = problemsByPattern(problem.patternId).filter(p => p.id !== problem.id).slice(0, 3)
   const color    = node?.color ?? '#6BA9C9'
+  const slug     = patternSlugForProblem(problem.patternId)
+  const fullUrl  = urls.problem(slug, problem.id)
 
   const crumbs = [
     { label: 'DSA Patterns', href: '/' },
@@ -34,6 +104,67 @@ export default async function QuestionPage({
     ...(node ? [{ label: node.label, href: `/pattern/${node.id}` }] : []),
     { label: problem.title },
   ]
+
+  // ── Structured data ──────────────────────────────────────────────────────
+  const breadcrumbList = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home',  item: `${SITE_URL}/` },
+      ...(parent ? [{ '@type': 'ListItem', position: 2, name: parent.label, item: urls.pattern(parent.id) }] : []),
+      ...(node   ? [{ '@type': 'ListItem', position: parent ? 3 : 2, name: node.label, item: urls.pattern(node.id) }] : []),
+      { '@type': 'ListItem', position: (parent ? 3 : 2) + (node ? 1 : 0), name: problem.title, item: fullUrl },
+    ],
+  }
+
+  // LearningResource is the canonical schema for a single educational
+  // unit (a problem, in our case) with linked teaching material.
+  const learningResource = {
+    '@context': 'https://schema.org',
+    '@type': 'LearningResource',
+    '@id': `${fullUrl}#resource`,
+    name: problem.title,
+    description: problem.whyThisPattern,
+    url: fullUrl,
+    inLanguage: 'en-US',
+    learningResourceType: 'Problem',
+    educationalLevel:
+      problem.difficulty === 'Easy' ? 'Beginner' :
+      problem.difficulty === 'Medium' ? 'Intermediate' : 'Advanced',
+    teaches: node?.label,
+    about: problem.tags?.length ? problem.tags : (node?.label ?? 'DSA'),
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    publisher: { '@id': `${SITE_URL}/#org` },
+    keywords: [
+      problem.difficulty,
+      problem.platform,
+      node?.label,
+      ...(problem.tags ?? []),
+    ].filter(Boolean).join(', '),
+    // Reference the original problem on its host platform so Google can
+    // link the two as related citations.
+    citation: {
+      '@type': 'CreativeWork',
+      name: `${problem.title} on ${problem.platform}`,
+      url: problem.url,
+    },
+  }
+
+  // Question schema gives Google an explicit "this is a coding question"
+  // signal — which combined with the difficulty in the title can land
+  // us in the Quiz / Practice-question rich results.
+  const questionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Question',
+    name: problem.title,
+    text: `${problem.title} — solve this ${problem.difficulty.toLowerCase()} ${problem.platform} problem using the ${node?.label ?? 'DSA'} pattern.`,
+    answerCount: 1,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: problem.whyThisPattern,
+      url: problem.url,
+    },
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-void)' }}>
@@ -116,6 +247,11 @@ export default async function QuestionPage({
           )}
         </div>
       </div>
+
+      {/* Structured data */}
+      <JsonLd id="ld-problem-breadcrumb" data={breadcrumbList} />
+      <JsonLd id="ld-problem-resource"   data={learningResource} />
+      <JsonLd id="ld-problem-question"   data={questionSchema} />
     </div>
   )
 }

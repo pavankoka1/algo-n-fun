@@ -1,4 +1,5 @@
 // src/app/pattern/[slug]/page.tsx
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { PATTERN_MAP, PATTERNS } from '@/data/patterns'
@@ -8,21 +9,104 @@ import { ProblemCard } from '@/components/ui/ProblemCard'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { TopNav } from '@/components/TopNav'
 import { GrainOverlay } from '@/components/GrainOverlay'
+import { JsonLd } from '@/lib/JsonLd'
+import {
+  SITE_URL,
+  SITE_NAME,
+  DEFAULT_KEYWORDS,
+  clampDescription,
+  urls,
+} from '@/lib/seo'
 
+// ─── Static params ──────────────────────────────────────────────────────────
+// One page per pattern so every route ships fully pre-rendered HTML at
+// build time — maximises crawl efficiency and Core Web Vitals.
 export async function generateStaticParams() {
   return PATTERNS.map(p => ({ slug: p.id }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+// ─── Metadata ───────────────────────────────────────────────────────────────
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
   const { slug } = await params
   const node = PATTERN_MAP[slug]
+
+  if (!node) {
+    return {
+      title: 'Pattern not found',
+      description: 'The requested DSA pattern does not exist.',
+      robots: { index: false, follow: false },
+    }
+  }
+
+  const category   = CATEGORY_MAP[node.category]
+  const problems   = problemsByPatternOrSubtree(node.id)
+  const children   = node.childIds.map(id => PATTERN_MAP[id]).filter(Boolean)
+  const isFamily   = node.depth === 1
+  const isLeaf     = node.isLeaf
+
+  // Build a keyword-dense, intent-matching description. Targets the
+  // long-tail "<pattern name> dsa", "<pattern name> leetcode", and
+  // "<pattern name> coding interview pattern" queries.
+  const descriptionParts = [
+    `${node.label}${category ? ` (${category.label})` : ''}`,
+    isLeaf
+      ? '— a leaf DSA pattern'
+      : isFamily
+        ? '— a top-level DSA pattern family'
+        : '— a DSA sub-pattern',
+    'on algo-n-fun.',
+  ]
+  if (problems.length > 0) {
+    descriptionParts.push(
+      `${problems.length} curated coding-interview problem${problems.length > 1 ? 's' : ''} with the underlying pattern explained.`
+    )
+  }
+  if (children.length > 0) {
+    descriptionParts.push(
+      `Includes ${children.length} sub-pattern${children.length > 1 ? 's' : ''}: ${children.slice(0, 4).map(c => c.label).join(', ')}${children.length > 4 ? '…' : ''}.`
+    )
+  }
+  const description = clampDescription(descriptionParts.join(' '))
+
+  // Keywords: blend the generic site keywords with pattern-specific terms.
+  const keywords = [
+    node.label,
+    `${node.label} pattern`,
+    `${node.label} algorithm`,
+    `${node.label} leetcode`,
+    `${node.label} coding interview`,
+    ...(category ? [category.label] : []),
+    ...DEFAULT_KEYWORDS,
+  ]
+
+  const canonical = `/pattern/${node.id}`
+
   return {
-    title: node ? `${node.label} — algo-n-fun` : 'Pattern — algo-n-fun',
-    description: node ? `DSA problems for the ${node.label} pattern.` : '',
+    title: `${node.label} — DSA Pattern`,
+    description,
+    keywords,
+    alternates: { canonical },
+    openGraph: {
+      type: 'article',
+      url: urls.pattern(node.id),
+      siteName: SITE_NAME,
+      title: `${node.label} — DSA Pattern · ${SITE_NAME}`,
+      description,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${node.label} — DSA Pattern`,
+      description,
+    },
   }
 }
 
-export default async function PatternPage({ params }: { params: Promise<{ slug: string }> }) {
+// ─── Page ───────────────────────────────────────────────────────────────────
+export default async function PatternPage(
+  { params }: { params: Promise<{ slug: string }> }
+) {
   const { slug } = await params
   const node = PATTERN_MAP[slug]
   if (!node) notFound()
@@ -37,6 +121,71 @@ export default async function PatternPage({ params }: { params: Promise<{ slug: 
     ...(parentNode && parentNode.depth > 0 ? [{ label: parentNode.label, href: `/pattern/${parentNode.id}` }] : []),
     { label: node.label },
   ]
+
+  // ── Structured-data blocks ────────────────────────────────────────────────
+  // Breadcrumb mirrors the visual breadcrumb so Google shows
+  // "DSA Patterns › <Parent> › <Pattern>" in the SERP.
+  const breadcrumbList = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${SITE_URL}/`,
+      },
+      ...(parentNode && parentNode.depth > 0
+        ? [{
+            '@type': 'ListItem',
+            position: 2,
+            name: parentNode.label,
+            item: urls.pattern(parentNode.id),
+          }]
+        : []),
+      {
+        '@type': 'ListItem',
+        position: parentNode && parentNode.depth > 0 ? 3 : 2,
+        name: node.label,
+        item: urls.pattern(node.id),
+      },
+    ],
+  }
+
+  // LearningResource is the most precise schema for an educational
+  // technique page — supported by Google's structured-data report.
+  const learningResource = {
+    '@context': 'https://schema.org',
+    '@type': 'LearningResource',
+    '@id': `${urls.pattern(node.id)}#resource`,
+    name: `${node.label} — DSA Pattern`,
+    description:
+      `${node.label}${category ? ` is a ${category.label} pattern` : ''}` +
+      ` with ${problems.length} curated coding-interview problem${problems.length === 1 ? '' : 's'}.`,
+    url: urls.pattern(node.id),
+    inLanguage: 'en-US',
+    educationalLevel: node.depth >= 3 ? 'Advanced' : node.depth === 2 ? 'Intermediate' : 'Beginner',
+    learningResourceType: 'Pattern',
+    teaches: node.label,
+    about: category?.label ?? 'Data Structures and Algorithms',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    publisher: { '@id': `${SITE_URL}/#org` },
+  }
+
+  // If we have associated problems, expose them as an ItemList — this is
+  // what powers the "problems mentioned" rich result for educational pages.
+  const itemList = problems.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `${node.label} — practice problems`,
+    numberOfItems: problems.length,
+    itemListElement: problems.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.title,
+      url: urls.problem(parentNode?.id ?? node.id, p.id),
+    })),
+  } : null
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-void)' }}>
@@ -120,6 +269,11 @@ export default async function PatternPage({ params }: { params: Promise<{ slug: 
           )}
         </div>
       </div>
+
+      {/* Structured data */}
+      <JsonLd id="ld-pattern-breadcrumb" data={breadcrumbList} />
+      <JsonLd id="ld-pattern-resource"  data={learningResource} />
+      {itemList && <JsonLd id="ld-pattern-problems" data={itemList} />}
     </div>
   )
 }
