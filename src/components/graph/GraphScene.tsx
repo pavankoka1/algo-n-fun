@@ -1,13 +1,69 @@
 'use client'
-import { Environment, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
-import { useFrame } from '@react-three/fiber'
-import { useEffect, useRef, useState } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { useGraphStore } from '@/hooks/useGraphStore'
 import { CryptexModel } from './CryptexModel'
 import { TreeExplorer } from './TreeExplorer'
 import { StarField } from './StarField'
+
+// ─── Procedural image-based lighting ─────────────────────────────────────────
+//
+// We previously used <Environment preset="studio" />, which makes Drei fetch
+// `studio_small_03_1k.hdr` from the pmndrs CDN at runtime. When that CDN is
+// blocked, rate-limited, or offline, the loader throws inside the WebGL
+// loop and the entire renderer collapses with "Context Lost" — taking the
+// whole hero with it.
+//
+// `RoomEnvironment` ships inside three.js itself, so PMREMGenerator can
+// bake an equivalent IBL with zero network round-trips. Same "neutral
+// studio with soft reflections" character for our metallic cryptex, no
+// runtime dependency on any third-party host.
+//
+// We attach the baked texture to `scene.environment` declaratively via
+// R3F's <primitive attach="environment"> rather than mutating the scene
+// imperatively — same effect, plays nicely with React's reconciler, and
+// disposes correctly on unmount.
+//
+function ProceduralIBL({ intensity = 1.05 }: { intensity?: number }) {
+  const gl    = useThree(state => state.gl)
+  const scene = useThree(state => state.scene)
+
+  // Bake once per renderer. PMREMGenerator depends on the WebGL context,
+  // so re-bake if the context (gl) ever changes.
+  const envTexture = useMemo(() => {
+    const pmrem = new THREE.PMREMGenerator(gl)
+    const room  = new RoomEnvironment()
+    const tex   = pmrem.fromScene(room, 0.04).texture
+    pmrem.dispose()
+    return tex
+  }, [gl])
+
+  // environmentIntensity (r155+) sits next to scene.environment but isn't
+  // a regular three child, so a tiny effect is the cleanest way to set it.
+  // We restore the previous value on unmount so HMR / route changes don't
+  // leave the global scene over-lit.
+  //
+  // eslint-plugin-react-hooks treats values returned from `useThree` as
+  // immutable, but this is the documented three.js API for IBL strength
+  // and is exactly what <Environment> from Drei mutates under the hood.
+  useEffect(() => {
+    const previous = scene.environmentIntensity
+    // eslint-disable-next-line react-hooks/immutability
+    scene.environmentIntensity = intensity
+    return () => {
+      scene.environmentIntensity = previous
+    }
+  }, [scene, intensity])
+
+  // Dispose the baked PMREM texture when this component unmounts.
+  useEffect(() => () => { envTexture.dispose() }, [envTexture])
+
+  return <primitive object={envTexture} attach="environment" />
+}
 
 // ─── Main scene ──────────────────────────────────────────────────────────────
 export function GraphScene() {
@@ -166,9 +222,10 @@ export function GraphScene() {
         />
       </EffectComposer>
 
-      {/* Studio IBL gives broader, softer reflections on metallic surfaces than warehouse —
-          and at higher intensity the gold actually reads as gold, not olive-bronze. */}
-      <Environment preset="studio" environmentIntensity={1.05} />
+      {/* Procedural studio-style IBL (PMREM-baked RoomEnvironment) — gives
+          metals the soft broadband reflections they need to read as metal
+          instead of flat plastic, with zero network dependency. */}
+      <ProceduralIBL intensity={1.05} />
     </>
   )
 }
